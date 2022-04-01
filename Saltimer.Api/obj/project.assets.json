@@ -10180,24 +10180,26 @@
     ]
   },
   "packageFolders": {
-    "/Users/salt-dev/.nuget/packages/": {}
+    "C:\\Users\\Abel Sintaro\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/salt-dev/Snehal/FinalProject/Saltimer-BE/Saltimer.Api/Saltimer.Api/Saltimer.Api.csproj",
+      "projectUniqueName": "D:\\School\\Salt\\FinalProject\\Backend\\Saltimer-BE\\Saltimer.Api\\Saltimer.Api.csproj",
       "projectName": "Saltimer.Api",
-      "projectPath": "/Users/salt-dev/Snehal/FinalProject/Saltimer-BE/Saltimer.Api/Saltimer.Api/Saltimer.Api.csproj",
-      "packagesPath": "/Users/salt-dev/.nuget/packages/",
-      "outputPath": "/Users/salt-dev/Snehal/FinalProject/Saltimer-BE/Saltimer.Api/Saltimer.Api/obj/",
+      "projectPath": "D:\\School\\Salt\\FinalProject\\Backend\\Saltimer-BE\\Saltimer.Api\\Saltimer.Api.csproj",
+      "packagesPath": "C:\\Users\\Abel Sintaro\\.nuget\\packages\\",
+      "outputPath": "D:\\School\\Salt\\FinalProject\\Backend\\Saltimer-BE\\Saltimer.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/salt-dev/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Abel Sintaro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -10279,7 +10281,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.101/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
       }
     }
   }
