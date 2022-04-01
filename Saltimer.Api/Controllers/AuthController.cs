@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Saltimer.Api.Dto;
 using Saltimer.Api.Models;
-using Saltimer.Api.Services;
 
 namespace Saltimer.Api.Controllers
 {
@@ -29,7 +28,7 @@ namespace Saltimer.Api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(SignupUserDto request)
+        public async Task<ActionResult<User>> Register(RegisterDto request)
         {
             if (_context.User.Any(e => e.Username == request.Username))
                 return await Task.FromResult<ActionResult<User>>(BadRequest("User already exists."));
@@ -37,7 +36,7 @@ namespace Saltimer.Api.Controllers
             _authService.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             user.Username = request.Username;
-            user.ProfileImage = request.Url;
+            user.ProfileImage = request.ProfileImageUrl;
             user.EmailAddress = request.Email;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -49,7 +48,7 @@ namespace Saltimer.Api.Controllers
         }
 
         [HttpPost("login")]
-        public Task<ActionResult<string>> Login(LoginUserDto request)
+        public Task<ActionResult<string>> Login(LoginDto request)
         {
             var target_user = _context.User.FirstOrDefault(c => c.Username == request.Username);
             // if (user.Username != request.Username)
