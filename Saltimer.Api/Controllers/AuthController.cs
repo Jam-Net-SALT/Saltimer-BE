@@ -32,6 +32,33 @@ namespace Saltimer.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPut("user"), Authorize]
+        public async Task<IActionResult> PutUser(UserUpdateRequestDto request)
+        {
+            var targetUser = await _context.User.Where(u => u.Username.Contains(User.Identity.Name)).SingleOrDefaultAsync();
+
+            if (_context.User.Any(e => e.Id != targetUser.Id && e.Username == request.Username))
+                return BadRequest(new ErrorResponse()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Username is already taken."
+                });
+
+            if (_context.User.Any(e => e.Id != targetUser.Id && e.EmailAddress == request.EmailAddress))
+                return BadRequest(new ErrorResponse()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Email address is already taken."
+                });
+
+            _mapper.Map(request, targetUser);
+            _context.Entry(targetUser).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -41,7 +68,14 @@ namespace Saltimer.Api.Controllers
                 return BadRequest(new ErrorResponse()
                 {
                     Status = StatusCodes.Status400BadRequest,
-                    Message = "User already exists."
+                    Message = "Username is already taken."
+                });
+
+            if (_context.User.Any(e => e.EmailAddress == request.EmailAddress))
+                return BadRequest(new ErrorResponse()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Email address is already taken."
                 });
 
             _authService.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
