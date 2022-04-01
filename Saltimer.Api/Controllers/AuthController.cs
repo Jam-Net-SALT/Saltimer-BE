@@ -47,6 +47,8 @@ namespace Saltimer.Api.Controllers
             _authService.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var newUser = _mapper.Map<User>(request);
+            newUser.PasswordHash = passwordHash;
+            newUser.PasswordSalt = passwordSalt;
 
             newUser = _context.User.Add(newUser).Entity;
             await _context.SaveChangesAsync();
