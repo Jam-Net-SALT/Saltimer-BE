@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Saltimer.Api.Migrations
 {
     [DbContext(typeof(SaltimerDBContext))]
-    partial class SaltimerDBContextModelSnapshot : ModelSnapshot
+    [Migration("20220401162136_UpdateMobTimerTableToMobTimerSession")]
+    partial class UpdateMobTimerTableToMobTimerSession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,32 +59,6 @@ namespace Saltimer.Api.Migrations
                     b.ToTable("MobTimerSession");
                 });
 
-            modelBuilder.Entity("Saltimer.Api.Data.SessionMember", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("SessionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Turn")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SessionMember");
-                });
-
             modelBuilder.Entity("Saltimer.Api.Data.User", b =>
                 {
                     b.Property<int>("Id")
@@ -114,6 +90,33 @@ namespace Saltimer.Api.Migrations
                     b.ToTable("User");
                 });
 
+            modelBuilder.Entity("Saltimer.Api.Data.UserMobSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("MobTimerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MobTimerSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Turn")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MobTimerSessionId");
+
+                    b.ToTable("UserMobSession");
+                });
+
             modelBuilder.Entity("Saltimer.Api.Data.MobTimerSession", b =>
                 {
                     b.HasOne("Saltimer.Api.Data.User", "Owner")
@@ -123,19 +126,11 @@ namespace Saltimer.Api.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Saltimer.Api.Data.SessionMember", b =>
+            modelBuilder.Entity("Saltimer.Api.Data.UserMobSession", b =>
                 {
-                    b.HasOne("Saltimer.Api.Data.MobTimerSession", "Session")
+                    b.HasOne("Saltimer.Api.Data.MobTimerSession", null)
                         .WithMany("UserMobSessions")
-                        .HasForeignKey("SessionId");
-
-                    b.HasOne("Saltimer.Api.Data.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Session");
-
-                    b.Navigation("User");
+                        .HasForeignKey("MobTimerSessionId");
                 });
 
             modelBuilder.Entity("Saltimer.Api.Data.MobTimerSession", b =>

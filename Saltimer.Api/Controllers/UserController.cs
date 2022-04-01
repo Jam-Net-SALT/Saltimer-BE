@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Saltimer.Api.Data;
+using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {

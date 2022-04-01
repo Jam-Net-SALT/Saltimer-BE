@@ -1,19 +1,19 @@
 #nullable disable
 using Microsoft.EntityFrameworkCore;
-using Saltimer.Api.Data;
+using Saltimer.Api.Models;
 
-    public class SaltimerDBContext : DbContext
+public class SaltimerDBContext : DbContext
+{
+    public SaltimerDBContext(DbContextOptions<SaltimerDBContext> options)
+        : base(options)
     {
-        public SaltimerDBContext (DbContextOptions<SaltimerDBContext> options)
-            : base(options)
-        {
-        }
-
-        public DbSet<User> User { get; set; }
-
-        public DbSet<Saltimer.Api.Data.MobTimer> MobTimer { get; set; }
-
-        public DbSet<Saltimer.Api.Data.UserMobSession> UserMobSession { get; set; }
-
-
     }
+
+    public DbSet<User> User { get; set; }
+
+    public DbSet<MobTimerSession> MobTimerSession { get; set; }
+
+    public DbSet<SessionMember> SessionMember { get; set; }
+
+
+}

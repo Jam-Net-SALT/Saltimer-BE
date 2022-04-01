@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Saltimer.Api.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Saltimer.Api.Dto;
-using Microsoft.EntityFrameworkCore;
+using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
@@ -36,14 +35,14 @@ namespace Saltimer.Api.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(SignupUserDto request)
         {
-            if (_context.User.Any(e => e.Username == request.Username)) 
+            if (_context.User.Any(e => e.Username == request.Username))
                 return await Task.FromResult<ActionResult<User>>(BadRequest("User already exists."));
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             user.Username = request.Username;
-            user.Url = request.Url;
-            user.Email = request.Email;
+            user.ProfileImage = request.Url;
+            user.EmailAddress = request.Email;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
@@ -72,7 +71,7 @@ namespace Saltimer.Api.Controllers
             }
 
             string token = CreateToken(user);
-            return Task.FromResult<ActionResult<string>>(Ok(new{token = token}));
+            return Task.FromResult<ActionResult<string>>(Ok(new { token = token }));
         }
 
         private string CreateToken(User modelUser)
@@ -80,7 +79,7 @@ namespace Saltimer.Api.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, modelUser.Username),
-                new Claim(ClaimTypes.Uri, modelUser.Url),
+                new Claim(ClaimTypes.Uri, modelUser.ProfileImage),
                 new Claim(ClaimTypes.Role, "Admin")
             };
 

@@ -1,57 +1,57 @@
 #nullable disable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Saltimer.Api.Data;
+using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MobTimerController : ControllerBase
+    public class MobTimerSessionController : ControllerBase
     {
         private readonly SaltimerDBContext _context;
 
-        public MobTimerController(SaltimerDBContext context)
+        public MobTimerSessionController(SaltimerDBContext context)
         {
             _context = context;
         }
 
-        // GET: api/MobTimer
+        // GET: api/MobTimerSession
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MobTimer>>> GetMobTimer()
+        public async Task<ActionResult<IEnumerable<MobTimerSession>>> GetMobTimerSession()
         {
-            //return await _context.MobTimer.ToListAsync();
-            return await _context.Set<MobTimer>()
+            //return await _context.MobTimerSession.ToListAsync();
+            return await _context.Set<MobTimerSession>()
                 .Include(e => e.UserMobSessions)
                 .ToListAsync();
 
         }
 
-        // GET: api/MobTimer/5
+        // GET: api/MobTimerSession/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<MobTimer>> GetMobTimer(int id)
+        public async Task<ActionResult<MobTimerSession>> GetMobTimerSession(int id)
         {
-            var mobTimer = await _context.MobTimer.FindAsync(id);
+            var mobTimerSession = await _context.MobTimerSession.FindAsync(id);
 
-            if (mobTimer == null)
+            if (mobTimerSession == null)
             {
                 return NotFound();
             }
 
-            return mobTimer;
+            return mobTimerSession;
         }
 
-        // PUT: api/MobTimer/5
+        // PUT: api/MobTimerSession/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMobTimer(int id, MobTimer mobTimer)
+        public async Task<IActionResult> PutMobTimerSession(int id, MobTimerSession mobTimerSession)
         {
-            if (id != mobTimer.Id)
+            if (id != mobTimerSession.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(mobTimer).State = EntityState.Modified;
+            _context.Entry(mobTimerSession).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace Saltimer.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MobTimerExists(id))
+                if (!mobTimerSessionExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace Saltimer.Api.Controllers
             return NoContent();
         }
 
-        // POST: api/MobTimer
+        // POST: api/MobTimerSession
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MobTimer>> PostMobTimer(MobTimer mobTimer)
+        public async Task<ActionResult<MobTimerSession>> PostMobTimerSession(MobTimerSession mobTimerSession)
         {
-            _context.MobTimer.Add(mobTimer);
+            _context.MobTimerSession.Add(mobTimerSession);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMobTimer", new { id = mobTimer.Id }, mobTimer);
+            return CreatedAtAction("GetMobTimerSession", new { id = mobTimerSession.Id }, mobTimerSession);
         }
 
-        // DELETE: api/MobTimer/5
+        // DELETE: api/MobTimerSession/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMobTimer(int id)
+        public async Task<IActionResult> DeleteMobTimerSession(int id)
         {
-            var mobTimer = await _context.MobTimer.FindAsync(id);
-            if (mobTimer == null)
+            var mobTimerSession = await _context.MobTimerSession.FindAsync(id);
+            if (mobTimerSession == null)
             {
                 return NotFound();
             }
 
-            _context.MobTimer.Remove(mobTimer);
+            _context.MobTimerSession.Remove(mobTimerSession);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool MobTimerExists(int id)
+        private bool mobTimerSessionExists(int id)
         {
-            return _context.MobTimer.Any(e => e.Id == id);
+            return _context.MobTimerSession.Any(e => e.Id == id);
         }
     }
 }
