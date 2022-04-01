@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AutoMapper;
+using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Dto
 {
@@ -8,21 +10,29 @@ namespace Saltimer.Api.Dto
 
         [Required]
         [MinLength(2)]
-        [MaxLength(8)]
+        [MaxLength(20)]
         public string Username { get; set; }
 
         [Required]
         [EmailAddressAttribute]
-        public string Email { get; set; }
+        public string EmailAddress { get; set; }
 
         [Required]
         [UrlAttribute]
-        public string ProfileImageUrl { get; set; }
+        public string ProfileImage { get; set; }
 
         [Required]
         [RegularExpressionAttribute(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
                                     ErrorMessage = passwordErrorMessage)]
         public string Password { get; set; }
+    }
+
+    public class RegisterDtoToUserProfile : Profile
+    {
+        public RegisterDtoToUserProfile()
+        {
+            CreateMap<RegisterDto, User>();
+        }
     }
 
 }

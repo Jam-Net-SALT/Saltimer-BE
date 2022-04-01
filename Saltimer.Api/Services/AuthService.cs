@@ -18,22 +18,12 @@ namespace Saltimer.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string GetMyName()
-        {
-            var result = string.Empty;
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                result = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
-            }
-            return result;
-        }
+
         public string CreateToken(User modelUser)
         {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, modelUser.Username),
-                new Claim(ClaimTypes.Uri, modelUser.ProfileImage),
-                new Claim(ClaimTypes.Role, "Admin")
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
@@ -68,5 +58,6 @@ namespace Saltimer.Api.Services
                 return computedHash.SequenceEqual(passwordHash);
             }
         }
+
     }
 }

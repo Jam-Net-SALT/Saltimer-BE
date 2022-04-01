@@ -1,6 +1,8 @@
 ﻿
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Saltimer.Api.Dto;
 using Saltimer.Api.Models;
 
@@ -11,62 +13,63 @@ namespace Saltimer.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly SaltimerDBContext _context;
-        private static User user = new User();
         private readonly IAuthService _authService;
+        public readonly IMapper _mapper;
 
-        public AuthController(IAuthService authService, SaltimerDBContext context)
+        public AuthController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
         {
+            _mapper = mapper;
             _authService = authService;
             _context = context;
         }
 
-        [HttpGet, Authorize]
-        public ActionResult<string> GetMe()
+        [HttpGet("user"), Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
+        public async Task<ActionResult> GetMe()
         {
-            var userName = _authService.GetMyName();
-            return Ok(userName);
+            var currentUser = await _context.User.Where(u => u.Username.Equals(User.Identity.Name)).SingleOrDefaultAsync();
+            var response = _mapper.Map<UserResponseDto>(currentUser);
+            return Ok(response);
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(RegisterDto request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        public async Task<ActionResult> Register(RegisterDto request)
         {
             if (_context.User.Any(e => e.Username == request.Username))
-                return await Task.FromResult<ActionResult<User>>(BadRequest("User already exists."));
+                return BadRequest(new ErrorResponse()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "User already exists."
+                });
 
             _authService.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            user.Username = request.Username;
-            user.ProfileImage = request.ProfileImageUrl;
-            user.EmailAddress = request.Email;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            var newUser = _mapper.Map<User>(request);
 
-            _context.User.Add(user);
+            newUser = _context.User.Add(newUser).Entity;
             await _context.SaveChangesAsync();
 
-            return await Task.FromResult<ActionResult<User>>(Ok(user));
+            var response = _mapper.Map<UserResponseDto>(newUser);
+
+            return Ok(response);
         }
 
         [HttpPost("login")]
-        public Task<ActionResult<string>> Login(LoginDto request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponseDto))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult> Login(LoginDto request)
         {
-            var target_user = _context.User.FirstOrDefault(c => c.Username == request.Username);
-            // if (user.Username != request.Username)
-            // {
-            //     return Task.FromResult<ActionResult<string>>(BadRequest("User not found."));
-            // }
-            if (target_user == null)
+            var targetUser = await _context.User.SingleOrDefaultAsync(c => c.Username == request.Username);
+
+            if (targetUser == null || !_authService.VerifyPasswordHash(request.Password, targetUser.PasswordHash, targetUser.PasswordSalt))
             {
-                return Task.FromResult<ActionResult<string>>(BadRequest("User not found."));
+                return Unauthorized();
             }
 
-            if (!_authService.VerifyPasswordHash(request.Password, target_user.PasswordHash, target_user.PasswordSalt))
-            {
-                return Task.FromResult<ActionResult<string>>(BadRequest("Wrong password."));
-            }
-
-            string token = _authService.CreateToken(user);
-            return Task.FromResult<ActionResult<string>>(Ok(new { token = token }));
+            string token = _authService.CreateToken(targetUser);
+            return Ok(new LoginResponseDto() { Token = token });
         }
 
     }

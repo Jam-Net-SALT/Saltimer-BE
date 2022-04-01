@@ -12,6 +12,7 @@ builder.Services.AddDbContext<SaltimerDBContext>(options =>
 
     options.UseSqlServer(builder.Configuration.GetConnectionString("SaltimerDBContext")));
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IAuthService, AuthService>();
