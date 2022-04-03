@@ -2,10 +2,12 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Saltimer.Api.Attributes;
 
 namespace Saltimer.Api.Controllers
 {
     [Route("api/[controller]"), Authorize]
+    [ValidateTokenAttribute]
     [ApiController]
     public abstract class BaseController : ControllerBase
     {
