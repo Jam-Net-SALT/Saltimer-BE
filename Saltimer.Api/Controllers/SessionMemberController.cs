@@ -31,8 +31,29 @@ namespace Saltimer.Api.Controllers
                     .ToListAsync();
         }
 
-        // POST: api/SessionMember
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // GET: api/SessionMember
+        [HttpGet("{mobTimerId}/vip/{uuid}")]
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetSessionMemberByUUID(int mobTimerId, Guid uuid)
+        {
+            var currentUser = _authService.GetCurrentUser();
+            var targetMobTimer = await _context.SessionMember
+                    .Where(sm => sm.Session.UniqueId.Equals(uuid.ToString()))
+                    .Where(sm => sm.Session.Id == mobTimerId)
+                    .Select(sm => sm.Session)
+                    .FirstOrDefaultAsync();
+
+            if (targetMobTimer == null) return NotFound(new ErrorResponse()
+            {
+                Message = $"Mobtimer session {uuid} with Id {mobTimerId} not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+
+            return await _context.SessionMember
+                    .Where(sm => sm.Session.Id == targetMobTimer.Id)
+                    .Select(sm => _mapper.Map<UserResponseDto>(sm.User))
+                    .ToListAsync();
+        }
+
         [HttpPost("{mobTimerId}")]
         [ActionName(nameof(PostSessionMember))]
         public async Task<ActionResult<SessionMemberResponse>> PostSessionMember(int mobTimerId, SessionMemberRequest request)
@@ -86,6 +107,54 @@ namespace Saltimer.Api.Controllers
 
             return CreatedAtAction(nameof(PostSessionMember), response);
         }
+
+        [HttpPost("{mobTimerId}/vip")]
+        [ActionName(nameof(PostSessionMember))]
+        public async Task<ActionResult<SessionMemberResponse>> PostSessionMemberByUUID(int mobTimerId, VipSessionMemberRequest request)
+        {
+            var currentUser = _authService.GetCurrentUser();
+
+            var targetMobTimer = await _context.SessionMember
+                    .Include(sm => sm.Session.Members)
+                    .Where(sm => sm.Session.UniqueId.Equals(request.Uuid.ToString()))
+                    .Where(sm => sm.Session.Id == mobTimerId)
+                    .Select(sm => sm.Session)
+                    .FirstOrDefaultAsync();
+
+            if (targetMobTimer == null) return NotFound(new ErrorResponse()
+            {
+                Message = $"Mobtimer session {request.Uuid} with Id {mobTimerId} not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+
+            var userAlreadyMember = _context.SessionMember
+                    .Any(sm => sm.Session.Id == mobTimerId && sm.User.Id == currentUser.Id);
+
+            if (userAlreadyMember) return BadRequest(new ErrorResponse()
+            {
+                Message = "You are already a member.",
+                Status = StatusCodes.Status400BadRequest
+            });
+
+            var newRecord = _context.SessionMember.Add(new SessionMember()
+            {
+                User = currentUser,
+                Session = targetMobTimer,
+                Turn = targetMobTimer.Members.Max(m => m.Turn) + 1,
+            }).Entity;
+            await _context.SaveChangesAsync();
+
+            var sessionMember = _context.SessionMember
+                        .Include(sm => sm.User)
+                        .Include(sm => sm.Session)
+                        .Where(s => s.Id == newRecord.Id)
+                        .Single();
+
+            var response = _mapper.Map<SessionMemberResponse>(sessionMember);
+
+            return CreatedAtAction(nameof(PostSessionMember), response);
+        }
+
 
         // DELETE: api/SessionMember/5
         [HttpDelete("{mobTimerId}")]
