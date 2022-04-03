@@ -1,5 +1,4 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,22 +7,12 @@ using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
-        private readonly SaltimerDBContext _context;
-        private readonly IAuthService _authService;
-        public readonly IMapper _mapper;
-
         public AuthController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
-        {
-            _mapper = mapper;
-            _authService = authService;
-            _context = context;
-        }
+            : base(mapper, authService, context) { }
 
-        [HttpGet("user"), Authorize]
+        [HttpGet("user")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
         public ActionResult<UserResponseDto> GetMe()
         {
@@ -32,7 +21,7 @@ namespace Saltimer.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("user"), Authorize]
+        [HttpPut("user")]
         public async Task<IActionResult> PutUser(UserUpdateRequestDto request)
         {
             var currentUser = _authService.GetCurrentUser();
@@ -60,7 +49,7 @@ namespace Saltimer.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("register")]
+        [HttpPost("register"), AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
         public async Task<ActionResult> Register(RegisterDto request)
@@ -93,7 +82,7 @@ namespace Saltimer.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPost("login")]
+        [HttpPost("login"), AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponseDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> Login(LoginDto request)

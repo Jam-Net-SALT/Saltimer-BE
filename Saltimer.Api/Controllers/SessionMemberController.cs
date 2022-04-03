@@ -1,20 +1,15 @@
 #nullable disable
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class SessionMemberController : ControllerBase
+    public class SessionMemberController : BaseController
     {
-        private readonly SaltimerDBContext _context;
-
-        public SessionMemberController(SaltimerDBContext context)
-        {
-            _context = context;
-        }
+        public SessionMemberController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
+            : base(mapper, authService, context) { }
 
         // GET: api/SessionMember
         [HttpGet]

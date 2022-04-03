@@ -1,6 +1,5 @@
 #nullable disable
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saltimer.Api.Dto;
@@ -8,24 +7,13 @@ using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class MobTimerSessionController : ControllerBase
+    public class MobTimerSessionController : BaseController
     {
-        private readonly SaltimerDBContext _context;
-
-        private readonly IAuthService _authService;
-        public readonly IMapper _mapper;
-
         public MobTimerSessionController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
-        {
-            _mapper = mapper;
-            _authService = authService;
-            _context = context;
-        }
+           : base(mapper, authService, context) { }
 
         // GET: api/MobTimerSession
-        [HttpGet, Authorize]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<MobTimerResponseDto>>> GetMobTimerSession()
         {
             var currentUser = _authService.GetCurrentUser();
@@ -39,7 +27,7 @@ namespace Saltimer.Api.Controllers
         }
 
         // GET: api/MobTimerSession/5
-        [HttpGet("{id}"), Authorize]
+        [HttpGet("{id}")]
         public async Task<ActionResult<MobTimerResponseDto>> GetMobTimerSession(int id)
         {
             var currentUser = _authService.GetCurrentUser();
@@ -58,9 +46,7 @@ namespace Saltimer.Api.Controllers
             return mobTimerSession;
         }
 
-        // PUT: api/MobTimerSession/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}"), Authorize]
+        [HttpPut("{id}")]
         public async Task<IActionResult> PutMobTimerSession(int id, MobTimerSession mobTimerSession)
         {
             if (id != mobTimerSession.Id)
@@ -89,7 +75,7 @@ namespace Saltimer.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost, Authorize]
+        [HttpPost]
         public async Task<ActionResult<MobTimerResponseDto>> PostMobTimerSession(CreateMobTimerDto request)
         {
             var currentUser = _authService.GetCurrentUser();
@@ -110,8 +96,7 @@ namespace Saltimer.Api.Controllers
             return CreatedAtAction("GetMobTimerSession", new { id = response.Id }, response);
         }
 
-        // DELETE: api/MobTimerSession/5
-        [HttpDelete("{id}"), Authorize]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMobTimerSession(int id)
         {
             var mobTimerSession = await _context.MobTimerSession.FindAsync(id);

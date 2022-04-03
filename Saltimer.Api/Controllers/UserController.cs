@@ -1,27 +1,16 @@
 #nullable disable
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saltimer.Api.Dto;
 
 namespace Saltimer.Api.Controllers
 {
-    [Route("api/[controller]s")]
-    [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
-        private readonly SaltimerDBContext _context;
-        public readonly IMapper _mapper;
+        public UserController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
+             : base(mapper, authService, context) { }
 
-        public UserController(IMapper mapper, SaltimerDBContext context)
-        {
-            _mapper = mapper;
-            _context = context;
-        }
-
-        // GET: api/User
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetUser(string? filterTerm)
         {
@@ -34,7 +23,6 @@ namespace Saltimer.Api.Controllers
                 .ToListAsync();
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserResponseDto>> GetUser(int id)
         {
