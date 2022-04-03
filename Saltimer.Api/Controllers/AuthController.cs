@@ -25,9 +25,9 @@ namespace Saltimer.Api.Controllers
 
         [HttpGet("user"), Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
-        public async Task<ActionResult> GetMe()
+        public ActionResult<UserResponseDto> GetMe()
         {
-            var currentUser = await _context.User.Where(u => u.Username.Equals(User.Identity.Name)).SingleOrDefaultAsync();
+            var currentUser = _authService.GetCurrentUser();
             var response = _mapper.Map<UserResponseDto>(currentUser);
             return Ok(response);
         }
@@ -35,7 +35,8 @@ namespace Saltimer.Api.Controllers
         [HttpPut("user"), Authorize]
         public async Task<IActionResult> PutUser(UserUpdateRequestDto request)
         {
-            var targetUser = await _context.User.Where(u => u.Username.Contains(User.Identity.Name)).SingleOrDefaultAsync();
+            var currentUser = _authService.GetCurrentUser();
+            var targetUser = await _context.User.Where(u => u.Id == currentUser.Id).SingleOrDefaultAsync();
 
             if (_context.User.Any(e => e.Id != targetUser.Id && e.Username == request.Username))
                 return BadRequest(new ErrorResponse()

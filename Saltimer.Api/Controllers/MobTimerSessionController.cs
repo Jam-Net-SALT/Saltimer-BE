@@ -13,11 +13,14 @@ namespace Saltimer.Api.Controllers
     public class MobTimerSessionController : ControllerBase
     {
         private readonly SaltimerDBContext _context;
+
+        private readonly IAuthService _authService;
         public readonly IMapper _mapper;
 
-        public MobTimerSessionController(IMapper mapper, SaltimerDBContext context)
+        public MobTimerSessionController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
         {
             _mapper = mapper;
+            _authService = authService;
             _context = context;
         }
 
@@ -25,7 +28,7 @@ namespace Saltimer.Api.Controllers
         [HttpGet, Authorize]
         public async Task<ActionResult<IEnumerable<MobTimerResponseDto>>> GetMobTimerSession()
         {
-            var currentUser = await getCurrentUser();
+            var currentUser = _authService.GetCurrentUser();
 
             return await _context.MobTimerSession
                 .Where(m => m.Owner.Username.Equals(currentUser.Username) ||
@@ -39,7 +42,7 @@ namespace Saltimer.Api.Controllers
         [HttpGet("{id}"), Authorize]
         public async Task<ActionResult<MobTimerResponseDto>> GetMobTimerSession(int id)
         {
-            var currentUser = await getCurrentUser();
+            var currentUser = _authService.GetCurrentUser();
 
             var mobTimerSession = await _context.MobTimerSession.Where(m => m.Owner.Username.Equals(currentUser.Username) ||
                             m.Members.Any(s => s.User.Username.Equals(currentUser.Username)))
@@ -89,7 +92,7 @@ namespace Saltimer.Api.Controllers
         [HttpPost, Authorize]
         public async Task<ActionResult<MobTimerResponseDto>> PostMobTimerSession(CreateMobTimerDto request)
         {
-            var currentUser = await getCurrentUser();
+            var currentUser = _authService.GetCurrentUser();
             var newMobTimer = _mapper.Map<MobTimerSession>(request);
             newMobTimer.Owner = currentUser;
 
@@ -121,11 +124,6 @@ namespace Saltimer.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private async Task<User> getCurrentUser()
-        {
-            return await _context.User.Where(u => u.Username.Equals(User.Identity.Name)).SingleOrDefaultAsync();
         }
 
         private bool mobTimerSessionExists(int id)
