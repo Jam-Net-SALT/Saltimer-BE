@@ -35,7 +35,7 @@ namespace Saltimer.Api.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("{mobTimerId}")]
         [ActionName(nameof(PostSessionMember))]
-        public async Task<ActionResult<SessionMemberResponse>> PostSessionMember(int mobTimerId, AddSessionMember request)
+        public async Task<ActionResult<SessionMemberResponse>> PostSessionMember(int mobTimerId, SessionMemberRequest request)
         {
             var currentUser = _authService.GetCurrentUser();
             var targetUser = await _context.User.FindAsync(request.UserId);
@@ -86,16 +86,36 @@ namespace Saltimer.Api.Controllers
         }
 
         // DELETE: api/SessionMember/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSessionMember(int id)
+        [HttpDelete("{mobTimerId}")]
+        public async Task<IActionResult> DeleteSessionMember(int mobTimerId, SessionMemberRequest request)
         {
-            var SessionMember = await _context.SessionMember.FindAsync(id);
-            if (SessionMember == null)
+            var currentUser = _authService.GetCurrentUser();
+
+            var sessionMember = await _context.SessionMember
+                        .Include(sm => sm.Session.Owner)
+                        .Include(sm => sm.User)
+                        .SingleOrDefaultAsync(sm => sm.Session.Id == mobTimerId && sm.User.Id == request.UserId);
+
+            if (sessionMember == null) return NotFound();
+
+
+            if (sessionMember.Session.Owner.Id != currentUser.Id && sessionMember.User.Id != currentUser.Id)
+                return Forbid();
+
+            if (sessionMember.Session.Owner.Id == currentUser.Id)
             {
-                return NotFound();
+                var mobTimer = await _context.MobTimerSession
+                        .Include(ms => ms.Members)
+                        .SingleOrDefaultAsync(ms => ms.Id == mobTimerId);
+
+                _context.RemoveRange(mobTimer);
+                _context.RemoveRange(mobTimer.Members);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
 
-            _context.SessionMember.Remove(SessionMember);
+            _context.SessionMember.Remove(sessionMember);
             await _context.SaveChangesAsync();
 
             return NoContent();

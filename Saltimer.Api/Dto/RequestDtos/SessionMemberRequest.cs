@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Saltimer.Api.Dto
 {
-    public class AddSessionMember
+    public class SessionMemberRequest
     {
         [Required]
         public int UserId { get; set; }
