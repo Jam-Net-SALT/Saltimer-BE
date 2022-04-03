@@ -14,12 +14,18 @@ namespace Saltimer.Api.Dto
         public string Username { get; set; }
 
         [Required]
-        [EmailAddressAttribute]
-        public string EmailAddress { get; set; }
+        [MinLength(2)]
+        [MaxLength(20)]
+        public string FirstName { get; set; }
 
         [Required]
-        [UrlAttribute]
-        public string ProfileImage { get; set; }
+        [MinLength(2)]
+        [MaxLength(20)]
+        public string LastName { get; set; }
+
+        [Required]
+        [EmailAddressAttribute]
+        public string EmailAddress { get; set; }
 
         [Required]
         [RegularExpressionAttribute(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",

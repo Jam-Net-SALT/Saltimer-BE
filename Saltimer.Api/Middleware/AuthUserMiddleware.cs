@@ -16,7 +16,7 @@ public class AuthUserMiddleware
         if (userId != null)
         {
             // attach user to context on successful jwt validation
-            context.Items["User"] = db.User.Find(userId.Value);
+            context.Items["User"] = await db.User.FindAsync(userId.Value);
         }
 
         await _next(context);

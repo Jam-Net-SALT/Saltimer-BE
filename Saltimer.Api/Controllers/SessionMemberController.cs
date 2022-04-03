@@ -47,6 +47,7 @@ namespace Saltimer.Api.Controllers
             });
 
             var targetMobTimer = await _context.SessionMember
+                    .Include(sm => sm.Session.Members)
                     .Where(sm => sm.User.Id == currentUser.Id)
                     .Where(sm => sm.Session.Id == mobTimerId)
                     .Select(sm => sm.Session)
@@ -70,7 +71,8 @@ namespace Saltimer.Api.Controllers
             var newRecord = _context.SessionMember.Add(new SessionMember()
             {
                 User = targetUser,
-                Session = targetMobTimer
+                Session = targetMobTimer,
+                Turn = targetMobTimer.Members.Max(m => m.Turn) + 1,
             }).Entity;
             await _context.SaveChangesAsync();
 
