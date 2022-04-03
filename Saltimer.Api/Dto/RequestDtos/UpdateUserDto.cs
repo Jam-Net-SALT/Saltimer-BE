@@ -4,7 +4,7 @@ using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Dto
 {
-    public class UserUpdateRequestDto
+    public class UpdateUserDto
     {
         [Required]
         [MinLength(2)]
@@ -20,11 +20,11 @@ namespace Saltimer.Api.Dto
         public string ProfileImage { get; set; }
     }
 
-    public class UserToUserUpdateRequestDtoProfile : Profile
+    public class UserToUpdateUserDtoProfile : Profile
     {
-        public UserToUserUpdateRequestDtoProfile()
+        public UserToUpdateUserDtoProfile()
         {
-            CreateMap<UserUpdateRequestDto, User>();
+            CreateMap<UpdateUserDto, User>();
         }
     }
 }

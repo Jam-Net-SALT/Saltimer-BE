@@ -3,7 +3,7 @@ using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Dto
 {
-    public class MobTimerResponseDto
+    public class MobTimerResponse
     {
         public int Id { get; set; }
 
@@ -22,11 +22,11 @@ namespace Saltimer.Api.Dto
         public virtual List<string> MembersUsername { get; set; }
     }
 
-    public class MobTimerSessionToMobTimerResponseDtoProfile : Profile
+    public class MobTimerSessionToMobTimerResponseProfile : Profile
     {
-        public MobTimerSessionToMobTimerResponseDtoProfile()
+        public MobTimerSessionToMobTimerResponseProfile()
         {
-            CreateMap<MobTimerSession, MobTimerResponseDto>()
+            CreateMap<MobTimerSession, MobTimerResponse>()
             .ForMember(
                 dest => dest.MembersUsername,
                 opt => opt.MapFrom(src => src.Members.Select(m => m.User.Username))

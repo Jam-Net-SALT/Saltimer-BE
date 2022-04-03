@@ -1,6 +1,6 @@
 namespace Saltimer.Api.Dto
 {
-    public class LoginResponseDto
+    public class LoginResponse
     {
         public string Token { get; set; }
 

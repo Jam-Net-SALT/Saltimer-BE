@@ -7,14 +7,14 @@ using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
 {
-    public class MobTimerSessionController : BaseController
+    public class MobTimerController : BaseController
     {
-        public MobTimerSessionController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
+        public MobTimerController(IMapper mapper, IAuthService authService, SaltimerDBContext context)
            : base(mapper, authService, context) { }
 
         // GET: api/MobTimerSession
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MobTimerResponseDto>>> GetMobTimerSession()
+        public async Task<ActionResult<IEnumerable<MobTimerResponse>>> GetMobTimerSession()
         {
             var currentUser = _authService.GetCurrentUser();
 
@@ -22,13 +22,13 @@ namespace Saltimer.Api.Controllers
                 .Where(m => m.Owner.Username.Equals(currentUser.Username) ||
                             m.Members.Any(s => s.User.Username.Equals(currentUser.Username)))
                 .Include(e => e.Members)
-                .Select(m => _mapper.Map<MobTimerResponseDto>(m))
+                .Select(m => _mapper.Map<MobTimerResponse>(m))
                 .ToListAsync();
         }
 
         // GET: api/MobTimerSession/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<MobTimerResponseDto>> GetMobTimerSession(int id)
+        public async Task<ActionResult<MobTimerResponse>> GetMobTimerSession(int id)
         {
             var currentUser = _authService.GetCurrentUser();
 
@@ -36,7 +36,7 @@ namespace Saltimer.Api.Controllers
                             m.Members.Any(s => s.User.Username.Equals(currentUser.Username)))
                 .Include(e => e.Members)
                 .Where(m => m.Id == id)
-                .Select(m => _mapper.Map<MobTimerResponseDto>(m)).SingleOrDefaultAsync();
+                .Select(m => _mapper.Map<MobTimerResponse>(m)).SingleOrDefaultAsync();
 
             if (mobTimerSession == null)
             {
@@ -46,42 +46,12 @@ namespace Saltimer.Api.Controllers
             return mobTimerSession;
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMobTimerSession(int id, MobTimerSession mobTimerSession)
-        {
-            if (id != mobTimerSession.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(mobTimerSession).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!mobTimerSessionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         [HttpPost]
-        public async Task<ActionResult<MobTimerResponseDto>> PostMobTimerSession(CreateMobTimerDto request)
+        public async Task<ActionResult<MobTimerResponse>> PostMobTimerSession(CreateMobTimerDto request)
         {
             var currentUser = _authService.GetCurrentUser();
             var newMobTimer = _mapper.Map<MobTimerSession>(request);
             newMobTimer.Owner = currentUser;
-
             newMobTimer = _context.MobTimerSession.Add(newMobTimer).Entity;
             _context.SessionMember.Add(new SessionMember()
             {
@@ -90,8 +60,7 @@ namespace Saltimer.Api.Controllers
             });
 
             await _context.SaveChangesAsync();
-
-            var response = _mapper.Map<MobTimerResponseDto>(newMobTimer);
+            var response = _mapper.Map<MobTimerResponse>(newMobTimer);
 
             return CreatedAtAction("GetMobTimerSession", new { id = response.Id }, response);
         }
@@ -99,13 +68,20 @@ namespace Saltimer.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMobTimerSession(int id)
         {
-            var mobTimerSession = await _context.MobTimerSession.FindAsync(id);
+            var currentUser = _authService.GetCurrentUser();
+            var mobTimerSession = await _context.MobTimerSession
+                .Include(ms => ms.Members)
+                .Where(ms => ms.Owner.Id == currentUser.Id)
+                .Where(ms => ms.Id == id)
+                .SingleOrDefaultAsync();
+
             if (mobTimerSession == null)
             {
                 return NotFound();
             }
 
-            _context.MobTimerSession.Remove(mobTimerSession);
+            _context.RemoveRange(mobTimerSession);
+            _context.RemoveRange(mobTimerSession.Members);
             await _context.SaveChangesAsync();
 
             return NoContent();

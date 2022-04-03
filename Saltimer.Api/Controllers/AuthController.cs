@@ -22,7 +22,7 @@ namespace Saltimer.Api.Controllers
         }
 
         [HttpPut("user")]
-        public async Task<IActionResult> PutUser(UserUpdateRequestDto request)
+        public async Task<IActionResult> PutUser(UpdateUserDto request)
         {
             var currentUser = _authService.GetCurrentUser();
             var targetUser = await _context.User.Where(u => u.Id == currentUser.Id).SingleOrDefaultAsync();
@@ -83,7 +83,7 @@ namespace Saltimer.Api.Controllers
         }
 
         [HttpPost("login"), AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponseDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> Login(LoginDto request)
         {
@@ -95,7 +95,7 @@ namespace Saltimer.Api.Controllers
             }
 
             string token = _authService.CreateToken(targetUser);
-            return Ok(new LoginResponseDto() { Token = token });
+            return Ok(new LoginResponse() { Token = token });
         }
 
     }
