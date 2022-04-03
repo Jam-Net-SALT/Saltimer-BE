@@ -19,18 +19,13 @@ namespace Saltimer.Api.Dto
 
         public DateTime PausedTime { get; set; }
 
-        public virtual List<string> MembersUsername { get; set; }
     }
 
     public class MobTimerSessionToMobTimerResponseProfile : Profile
     {
         public MobTimerSessionToMobTimerResponseProfile()
         {
-            CreateMap<MobTimerSession, MobTimerResponse>()
-            .ForMember(
-                dest => dest.MembersUsername,
-                opt => opt.MapFrom(src => src.Members.Select(m => m.User.Username))
-            );
+            CreateMap<MobTimerSession, MobTimerResponse>();
         }
     }
 }

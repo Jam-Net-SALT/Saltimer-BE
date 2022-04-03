@@ -1,0 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Saltimer.Api.Dto
+{
+    public class AddSessionMember
+    {
+        [Required]
+        public int UserId { get; set; }
+
+    }
+}

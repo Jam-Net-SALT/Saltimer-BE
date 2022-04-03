@@ -2,6 +2,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Saltimer.Api.Dto;
 using Saltimer.Api.Models;
 
 namespace Saltimer.Api.Controllers
@@ -12,66 +13,76 @@ namespace Saltimer.Api.Controllers
             : base(mapper, authService, context) { }
 
         // GET: api/SessionMember
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<SessionMember>>> GetSessionMember()
+        [HttpGet("{mobTimerId}")]
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetSessionMember(int mobTimerId)
         {
-            return await _context.SessionMember.ToListAsync();
-        }
+            var currentUser = _authService.GetCurrentUser();
+            var targetMobTimer = await _context.SessionMember
+                    .Where(sm => sm.User.Id == currentUser.Id)
+                    .Where(sm => sm.Session.Id == mobTimerId)
+                    .Select(sm => sm.Session)
+                    .FirstOrDefaultAsync();
 
-        // GET: api/SessionMember/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<SessionMember>> GetSessionMember(int id)
-        {
-            var SessionMember = await _context.SessionMember.FindAsync(id);
+            if (targetMobTimer == null) return NotFound();
 
-            if (SessionMember == null)
-            {
-                return NotFound();
-            }
-
-            return SessionMember;
-        }
-
-        // PUT: api/SessionMember/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSessionMember(int id, SessionMember sessionMember)
-        {
-            if (id != sessionMember.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(sessionMember).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SessionMemberExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return await _context.SessionMember
+                    .Where(sm => sm.Session.Id == targetMobTimer.Id)
+                    .Select(sm => _mapper.Map<UserResponseDto>(sm.User))
+                    .ToListAsync();
         }
 
         // POST: api/SessionMember
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<SessionMember>> PostSessionMember(SessionMember sessionMember)
+        [HttpPost("{mobTimerId}")]
+        [ActionName(nameof(PostSessionMember))]
+        public async Task<ActionResult<SessionMemberResponse>> PostSessionMember(int mobTimerId, AddSessionMember request)
         {
-            _context.SessionMember.Add(sessionMember);
+            var currentUser = _authService.GetCurrentUser();
+            var targetUser = await _context.User.FindAsync(request.UserId);
+
+            if (targetUser == null) return NotFound(new ErrorResponse()
+            {
+                Message = "Target user not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+
+            var targetMobTimer = await _context.SessionMember
+                    .Where(sm => sm.User.Id == currentUser.Id)
+                    .Where(sm => sm.Session.Id == mobTimerId)
+                    .Select(sm => sm.Session)
+                    .FirstOrDefaultAsync();
+
+            if (targetMobTimer == null) return NotFound(new ErrorResponse()
+            {
+                Message = "Mobtimer session not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+
+            var userAlreadyMember = _context.SessionMember
+                    .Any(sm => sm.Session.Id == mobTimerId && sm.User.Id == targetUser.Id);
+
+            if (userAlreadyMember) return BadRequest(new ErrorResponse()
+            {
+                Message = "Provided user is already a member.",
+                Status = StatusCodes.Status400BadRequest
+            });
+
+            var newRecord = _context.SessionMember.Add(new SessionMember()
+            {
+                User = targetUser,
+                Session = targetMobTimer
+            }).Entity;
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetSessionMember", new { id = sessionMember.Id }, sessionMember);
+            var sessionMember = _context.SessionMember
+                        .Include(sm => sm.User)
+                        .Include(sm => sm.Session)
+                        .Where(s => s.Id == newRecord.Id)
+                        .Single();
+
+            var response = _mapper.Map<SessionMemberResponse>(sessionMember);
+
+            return CreatedAtAction(nameof(PostSessionMember), response);
         }
 
         // DELETE: api/SessionMember/5
