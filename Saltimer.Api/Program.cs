@@ -70,7 +70,7 @@ app.UseRouting();
 app.UseEndpoints(endpoints =>
     {
         endpoints.MapControllers();
-        endpoints.MapHub<Hub>("{id}/application");
+        endpoints.MapHub<Hub>("test/application");
     }
     );
 
