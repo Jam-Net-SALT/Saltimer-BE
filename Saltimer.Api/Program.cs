@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Saltimer.Api.Middleware;
 using Swashbuckle.AspNetCore.Filters;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
@@ -62,5 +64,14 @@ app.UseAuthorization();
 app.UseMiddleware<AuthUserMiddleware>();
 
 app.MapControllers();
+
+app.UseRouting(); 
+
+app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+        endpoints.MapHub<Hub>("{id}/application");
+    }
+    );
 
 app.Run();
